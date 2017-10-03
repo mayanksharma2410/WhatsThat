@@ -38,8 +38,9 @@ public class FirstActivity extends AppCompatActivity {
     private StorageReference mStorage;
     private DatabaseReference mDatabase;
     String id;
-    private String get_id;
-    ListView listViewData;
+    Data uid;
+    private String getting_course, getting_sem, getting_year, get_id;
+    private ListView mListView;
     List<Data> dataList;
 
     @Override
@@ -47,16 +48,16 @@ public class FirstActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first);
 
+        dataList = new ArrayList<>();
+        mListView = (ListView) findViewById(R.id.listView);
+
         FirebaseStorage storage = FirebaseStorage.getInstance();
         mStorage = storage.getReferenceFromUrl("gs://whatsthat-52cbb.appspot.com/");
         mDatabase = FirebaseDatabase.getInstance().getReference().child("docs");
 
-        listViewData = (ListView)findViewById(R.id.listViewData);
-        dataList = new ArrayList<>();
-
-        //Sem = (TextView)findViewById(R.id.post_sem);
-        //Course = (TextView)findViewById(R.id.post_course);
-        //Year = (TextView)findViewById(R.id.post_year);
+        Sem = (TextView)findViewById(R.id.post_sem);
+        Course = (TextView)findViewById(R.id.post_course);
+        Year = (TextView)findViewById(R.id.post_year);
         back = (Button)findViewById(R.id.back1);
 
         get_id = mDatabase.push().getKey();
@@ -72,36 +73,50 @@ public class FirstActivity extends AppCompatActivity {
         });
 
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        mDatabase.addChildEventListener(new ChildEventListener() {
+        //adding a clicklistener on listview
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                id = dataSnapshot.getKey();
-                Data data = dataSnapshot.getValue(Data.class);
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //getting the upload
+                Data data = dataList.get(i);
 
-                Course.setText(data.getCourse());
-                Sem.setText(data.getSem());
-                Year.setText(data.getYear());
+                //Opening the upload file in browser using the upload url
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(data.getUrl()));
+                startActivity(intent);
+            }
+        });
+
+        //retrieving upload data from firebase database
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Data data = postSnapshot.getValue(Data.class);
+                    dataList.add(data);
+                }
+
+                String[] uploads = new String[dataList.size()];
+
+                for (int i = 0; i < uploads.length; i++) {
+                    uploads[i] = dataList.get(i).getUrl();
+                }
+
+                //displaying it to list
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, uploads);
+                mListView.setAdapter(adapter);
             }
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            public void onCancelled(DatabaseError databaseError) {
 
             }
+        });
 
+        mDatabase.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                showData(dataSnapshot);
             }
 
             @Override
@@ -110,4 +125,22 @@ public class FirstActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void showData(DataSnapshot dataSnapshot) {
+        for(DataSnapshot ds : dataSnapshot.getChildren())
+        {
+            Data data = new Data();
+            data.setCourse(ds.child(get_id).getValue(Data.class).getCourse());
+            data.setYear(ds.child(get_id).getValue(Data.class).getYear());
+            data.setSem(ds.child(get_id).getValue(Data.class).getSem());
+
+            ArrayList<String> array = new ArrayList<>();
+            array.add(data.getCourse());
+            array.add(data.getYear());
+            array.add(data.getSem());
+            ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, array);
+            mListView.setAdapter(adapter);
+        }
+    }
+
 }

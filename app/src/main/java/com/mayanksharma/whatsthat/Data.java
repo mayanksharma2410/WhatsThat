@@ -18,10 +18,10 @@ public class Data {
     }
 
     public Data(String course, String year, String sem, String id, String url) {
-        Course = course;
-        Year = year;
-        Sem = sem;
-        Id = id;
+        this.Course = course;
+        this.Year = year;
+        this.Sem = sem;
+        this.Id = id;
         this.Url= url;
     }
 

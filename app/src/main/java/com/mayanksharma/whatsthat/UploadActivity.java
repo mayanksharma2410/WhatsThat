@@ -1,5 +1,6 @@
 package com.mayanksharma.whatsthat;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -49,7 +50,8 @@ public class UploadActivity extends AppCompatActivity {
     private String text2Qr;
     String get_id;
     private Uri mQrCodeUri = null;
-    ProgressBar progressBar;
+    //ProgressBar progressBar;
+    private ProgressDialog mProgress;
     private Uri mPdfUri = null;
 
 
@@ -79,7 +81,7 @@ public class UploadActivity extends AppCompatActivity {
         Qr_generate = (Button)findViewById(R.id.qr_generate);
         Image = (ImageView)findViewById(R.id.qr_image);
         PdfStatus = (TextView)findViewById(R.id.pdf_status);
-        progressBar = (ProgressBar) findViewById(R.id.progressbar);
+        //progressBar = (ProgressBar) findViewById(R.id.progressbar);
 
         spinner1.setAdapter(adapter1);
         spinner2.setAdapter(adapter2);
@@ -148,6 +150,7 @@ public class UploadActivity extends AppCompatActivity {
             }
         });
 
+        //For generating QR CODE
         Qr_generate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -168,6 +171,8 @@ public class UploadActivity extends AppCompatActivity {
                 }
             }
         });
+
+        mProgress = new ProgressDialog(this);
 
     }
 
@@ -199,6 +204,8 @@ public class UploadActivity extends AppCompatActivity {
             //if a file is selected
             if (data.getData() != null) {
                 //uploading the file
+                PdfStatus.setText("Selected");
+
                 mPdfUri = data.getData();
             }else{
                 Toast.makeText(this, "No file chosen", Toast.LENGTH_SHORT).show();
@@ -208,7 +215,8 @@ public class UploadActivity extends AppCompatActivity {
 
     private void UploadIt(Uri data)
     {
-        progressBar.setVisibility(View.VISIBLE);
+        //progressBar.setVisibility(View.VISIBLE);
+        mProgress.setMessage("Uploading, Please Wait...");
 
 
         final String Get_Course = spinner1.getSelectedItem().toString();
@@ -216,26 +224,25 @@ public class UploadActivity extends AppCompatActivity {
         final String Get_Sem = spinner3.getSelectedItem().toString();
 
         if (!TextUtils.isEmpty(Get_Course) && !TextUtils.isEmpty(Get_Year) && !TextUtils.isEmpty(Get_Sem))
-        {
+        {   mProgress.show();
             //String get_id = mDatabase.push().getKey();
             StorageReference filePath = mStorage.child(Constants.STORAGE_PATH_UPLOADS).child(mPdfUri.getLastPathSegment() + ".pdf");
             filePath.putFile(data).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-                    PdfStatus.setText("Selected");
 
                     @SuppressWarnings("VisibleForTests")
                     final String Get_pdf_url = taskSnapshot.getDownloadUrl().toString();
 
                     Data data = new Data( Get_Course, Get_Year, Get_Sem, get_id, Get_pdf_url);
                     mDatabase.child(get_id).setValue(data);
-                    progressBar.setVisibility(View.GONE);
+                    //progressBar.setVisibility(View.GONE);
 
                     Intent intent = new Intent(UploadActivity.this, FinishActivity.class);
                     startActivity(intent);
                     //Toast.makeText(this, "uploaded", Toast.LENGTH_LONG).show();
-
+                    mProgress.dismiss();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override

@@ -55,10 +55,9 @@ public class HomeActivity extends AppCompatActivity {
 
         buttonScan = (Button) findViewById(R.id.buttonScan);
 
-        //id = mDatabase.getKey();
-
         qrScan = new IntentIntegrator(this);
 
+        //for scanning
         buttonScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,6 +66,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        //floating button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,19 +76,13 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        /*buttonScan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                qrScan.initiateScan();
-            }
-        }); */
 
+        //fetching the id from the database
         mDatabase.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                //id = dataSnapshot.getKey();
+                id = mDatabase.push().getKey();
                 uid = dataSnapshot.getValue(Data.class);
-                //id = uid.getId();
 
             }
 
@@ -112,43 +106,37 @@ public class HomeActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
 
 
+
+
+    //scanning process
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         //retrieve scan result
         IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanningResult != null) {
             //we have a result
-            String scanContent = scanningResult.getContents();
+            final String scanContent = scanningResult.getContents();
             if(scanContent == null)
             {
                 Toast.makeText(this, "Result Not Found", Toast.LENGTH_LONG).show();
             }
-            else if (scanContent.equals(mDatabase.push().getKey())) {
+            else if (scanContent.equals(id)) {
                 //Toast toast = Toast.makeText(getApplicationContext(), "1234", Toast.LENGTH_SHORT);
                 //toast.show();
-                Toast.makeText(this, uid.getCourse(), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, scanContent, Toast.LENGTH_LONG).show();
 
                 Intent intent1 = new Intent(HomeActivity.this, FirstActivity.class);
                 startActivity(intent1);
                 finish();
             } else {
                 Toast.makeText(HomeActivity.this, "Sorry something went wrong", Toast.LENGTH_LONG).show();
-
-
-              //  Intent intent2 = new Intent(HomeActivity.this, SecondActivity.class);
-               // startActivity(intent2);
-                //finish();
             }
 
         }
         else{
-            //Toast toast = Toast.makeText(getApplicationContext(),
-            // "No scan data received!", Toast.LENGTH_SHORT);
-            //toast.show();
             super.onActivityResult(requestCode, resultCode, intent);
         }
     }

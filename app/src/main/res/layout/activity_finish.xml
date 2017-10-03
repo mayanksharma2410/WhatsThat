@@ -12,42 +12,36 @@
 
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/Text_Course"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-        android:text="Course"/>
+        android:text="THANK YOU"
+        android:textSize="35sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="35dp"/>
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/Course"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
+        android:text="FOR USING"
+        android:textSize="35sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="35dp"/>
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/Text_Year"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-        android:text="Year"/>
+        android:text="WHAT'S THAT!"
+        android:textSize="45sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="35dp"/>
 
-    <TextView
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/Year"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/Text_Sem"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-        android:text="Sem"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/Sem"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
+        android:text="Log out"
+        android:id="@+id/logout"
+        android:textColor="#ffffff"
+        android:layout_marginTop="50dp"
+        android:background="#FBC02d"/>
 
 </LinearLayout>
