@@ -140,7 +140,7 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 UploadIt(mPdfUri);
-                //UploadQR();
+                UploadQR();
                 //Toast.makeText(this, "uploaded", Toast.LENGTH_LONG).show();
                 //Toast makeText (Context context, CharSequence text, int duration);
             }
