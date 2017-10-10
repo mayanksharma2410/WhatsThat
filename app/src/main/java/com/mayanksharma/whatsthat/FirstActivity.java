@@ -1,66 +1,62 @@
 package com.mayanksharma.whatsthat;
 
-import android.content.ContentValues;
+import android.app.DownloadManager;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.squareup.picasso.Picasso;
+import com.mayanksharma.whatsthat.model.Course;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FirstActivity extends AppCompatActivity {
-    private Button back;
-    private TextView Course;
-    private TextView Sem;
-    private TextView Year;
+    private Button back,pdfView;
+    private TextView tv_course;
+    private TextView tv_sem;
+    private TextView tv_year;
     private StorageReference mStorage;
     private DatabaseReference mDatabase;
+    private long enqueue;
+    private DownloadManager dm;
     String id;
     Data uid;
     private String getting_course, getting_sem, getting_year, get_id;
-    private ListView mListView;
+    private LinearLayout progressbar;
     List<Data> dataList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first);
+        ArrayList<Course> course = this.getIntent().getParcelableArrayListExtra("course");
 
         dataList = new ArrayList<>();
-        mListView = (ListView) findViewById(R.id.listView);
-
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        mStorage = storage.getReferenceFromUrl("gs://whatsthat-52cbb.appspot.com/");
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("docs");
-
-        Sem = (TextView)findViewById(R.id.post_sem);
-        Course = (TextView)findViewById(R.id.post_course);
-        Year = (TextView)findViewById(R.id.post_year);
+        progressbar = (LinearLayout) findViewById(R.id.llprogressbar);
+        tv_sem = (TextView)findViewById(R.id.post_sem);
+        tv_course = (TextView)findViewById(R.id.post_course);
+        tv_year = (TextView)findViewById(R.id.post_year);
         back = (Button)findViewById(R.id.back1);
-
-        get_id = mDatabase.push().getKey();
+        pdfView = (Button)findViewById(R.id.view);
+        showData(course);
 
         //to go back
         back.setOnClickListener(new View.OnClickListener() {
@@ -73,74 +69,91 @@ public class FirstActivity extends AppCompatActivity {
         });
 
 
-        //adding a clicklistener on listview
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //getting the upload
-                Data data = dataList.get(i);
+    }
 
-                //Opening the upload file in browser using the upload url
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(data.getUrl()));
+    public void showData(ArrayList<Course> courses) {
+        final Course cour=courses.get(0);
+
+        tv_sem.setText(cour.getSem());
+        tv_year.setText(cour.getYear());
+        tv_course.setText(cour.getCourse());
+        download(cour.getUrl(),cour.getCourse());
+       /* progressbar.setVisibility(View.GONE);
+        pdfView.setVisibility(View.VISIBLE);
+        pdfView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Intent.ACTION_VIEW,Uri.parse(cour.getUrl()+".pdf"));
+                intent.putExtra("url",cour.getUrl());
                 startActivity(intent);
             }
-        });
+        });*/
 
-        //retrieving upload data from firebase database
-        mDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    Data data = postSnapshot.getValue(Data.class);
-                    dataList.add(data);
-                }
 
-                String[] uploads = new String[dataList.size()];
 
-                for (int i = 0; i < uploads.length; i++) {
-                    uploads[i] = dataList.get(i).getUrl();
-                }
-
-                //displaying it to list
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, uploads);
-                mListView.setAdapter(adapter);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        mDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                showData(dataSnapshot);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
-    private void showData(DataSnapshot dataSnapshot) {
-        for(DataSnapshot ds : dataSnapshot.getChildren())
-        {
-            Data data = new Data();
-            data.setCourse(ds.child(get_id).getValue(Data.class).getCourse());
-            data.setYear(ds.child(get_id).getValue(Data.class).getYear());
-            data.setSem(ds.child(get_id).getValue(Data.class).getSem());
+    public void download(String url,String pdfName)
+    {
+        progressbar.setVisibility(View.VISIBLE);
+        pdfView.setVisibility(View.GONE);
+        dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Request request = new DownloadManager.Request(
+                Uri.parse(url));
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,""+pdfName+".pdf");
+        enqueue = dm.enqueue(request);
+    }
 
-            ArrayList<String> array = new ArrayList<>();
-            array.add(data.getCourse());
-            array.add(data.getYear());
-            array.add(data.getSem());
-            ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, array);
-            mListView.setAdapter(adapter);
+
+    BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            progressbar.setVisibility(View.GONE);
+            pdfView.setVisibility(View.VISIBLE);
+            if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
+                long downloadId = intent.getLongExtra(
+                        DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+
+                DownloadManager.Query query = new DownloadManager.Query();
+                query.setFilterById(enqueue);
+                Cursor c = dm.query(query);
+                if (c.moveToFirst()) {
+                    int columnIndex = c
+                            .getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    if (DownloadManager.STATUS_SUCCESSFUL == c
+                            .getInt(columnIndex)) {
+
+                        //  ImageView view = (ImageView) findViewById(R.id.imageView1);
+                        final String uriString = c
+                                .getString(c
+                                        .getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+                        pdfView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent=new Intent(FirstActivity.this,WevViewPdf.class);
+                                intent.putExtra("url",uriString);
+                                startActivity(intent);
+                            }
+                        });
+                    }
+                }
+            }
         }
+    };
+
+
+
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(receiver, new IntentFilter(
+                DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
+
+
 
 }

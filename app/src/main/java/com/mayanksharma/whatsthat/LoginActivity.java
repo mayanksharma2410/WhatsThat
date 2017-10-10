@@ -49,6 +49,10 @@ public class LoginActivity extends AppCompatActivity {
         {
             Intent intent = new Intent(LoginActivity.this, UploadActivity.class);
             startActivity(intent);
+            Toast.makeText(LoginActivity.this, "Logged In", Toast.LENGTH_LONG).show();
+        } else
+        {
+            Toast.makeText(LoginActivity.this, "Please try again", Toast.LENGTH_LONG).show();
         }
 
     }

@@ -1,33 +1,30 @@
 package com.mayanksharma.whatsthat;
 
-import android.content.ContentValues;
+import android.annotation.TargetApi;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
-
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.mayanksharma.whatsthat.model.Course;
+
+import java.util.ArrayList;
 
 
 public class HomeActivity extends AppCompatActivity {
+    private static final String TAG = "HomeActivity";
     private Button buttonScan;
     private IntentIntegrator qrScan;
     String post_qrValue;
@@ -36,7 +33,7 @@ public class HomeActivity extends AppCompatActivity {
     String post_sem;
     String post_image;
     String id;
-    private DatabaseReference mDatabase;
+    private FirebaseDatabase mDatabase;
     private StorageReference mStorage;
     Data uid;
 
@@ -47,10 +44,10 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        mStorage = storage.getReferenceFromUrl("gs://whatsthat-52cbb.appspot.com/");
-        mDatabase = FirebaseDatabase.getInstance().getReference("Docs");
+        if (shouldAskPermissions()) {
+            askPermissions();
+        }
+        mDatabase = FirebaseDatabase.getInstance();
 
 
         buttonScan = (Button) findViewById(R.id.buttonScan);
@@ -78,34 +75,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
         //fetching the id from the database
-        mDatabase.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                id = mDatabase.push().getKey();
-                uid = dataSnapshot.getValue(Data.class);
 
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
 
@@ -119,25 +89,65 @@ public class HomeActivity extends AppCompatActivity {
         if (scanningResult != null) {
             //we have a result
             final String scanContent = scanningResult.getContents();
+
             if(scanContent == null)
+            {
+
+            } else {//Toast.makeText(HomeActivity.this, scanContent, Toast.LENGTH_LONG).show();
+
+                mDatabase.getReference("Docs").getRef().child(scanContent).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            Course course = dataSnapshot.getValue(Course.class);
+                            ArrayList<Course> courseArrayList = new ArrayList<Course>();
+                            courseArrayList.add(course);
+                            Intent intent1 = new Intent(HomeActivity.this, FirstActivity.class);
+                            intent1.putParcelableArrayListExtra("course", courseArrayList);
+                            startActivity(intent1);
+                            finish();
+                        }else{
+                            Toast.makeText(HomeActivity.this, "Result Not Found", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.e("Home Scanner Error", "Failed to read app title value.", databaseError.toException());
+                    }
+                });
+            }
+          /*  if(scanContent == null)
             {
                 Toast.makeText(this, "Result Not Found", Toast.LENGTH_LONG).show();
             }
             else if (scanContent.equals(id)) {
                 //Toast toast = Toast.makeText(getApplicationContext(), "1234", Toast.LENGTH_SHORT);
                 //toast.show();
-                Toast.makeText(this, scanContent, Toast.LENGTH_LONG).show();
-
-                Intent intent1 = new Intent(HomeActivity.this, FirstActivity.class);
-                startActivity(intent1);
-                finish();
             } else {
                 Toast.makeText(HomeActivity.this, "Sorry something went wrong", Toast.LENGTH_LONG).show();
-            }
+            }*/
 
         }
         else{
             super.onActivityResult(requestCode, resultCode, intent);
         }
     }
+
+    protected boolean shouldAskPermissions() {
+        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
+    }
+
+    @TargetApi(23)
+    protected void askPermissions() {
+        String[] permissions = {
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.WRITE_EXTERNAL_STORAGE"
+        };
+        int requestCode = 200;
+        requestPermissions(permissions, requestCode);
+    }
+
+
+
 }
