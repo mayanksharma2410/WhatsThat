@@ -11,17 +11,19 @@ public class Data {
     private String Sem;
     private String Id;
     private String Url;
+    private String RoomNo;
 
     public Data ()
     {
 
     }
 
-    public Data(String course, String year, String sem, String id, String url) {
+    public Data(String course, String year, String sem, String id, String roomNo, String url) {
         this.Course = course;
         this.Year = year;
         this.Sem = sem;
         this.Id = id;
+        this.RoomNo = roomNo;
         this.Url= url;
     }
 
@@ -41,6 +43,8 @@ public class Data {
         return Id;
     }
 
+    public String getRoomNo() { return RoomNo;}
+
     public String getUrl() {
         return Url;
     }
@@ -59,6 +63,11 @@ public class Data {
 
     public void setId(String id) {
         Id = id;
+    }
+
+    public void setRoomNo(String roomNo)
+    {
+        RoomNo = roomNo;
     }
 
     public void setUrl(String url) {

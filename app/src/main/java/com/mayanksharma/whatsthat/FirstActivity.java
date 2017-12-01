@@ -33,6 +33,7 @@ public class FirstActivity extends AppCompatActivity {
     private TextView tv_course;
     private TextView tv_sem;
     private TextView tv_year;
+    private TextView tv_roomNo;
     private StorageReference mStorage;
     private DatabaseReference mDatabase;
     private long enqueue;
@@ -54,6 +55,7 @@ public class FirstActivity extends AppCompatActivity {
         tv_sem = (TextView)findViewById(R.id.post_sem);
         tv_course = (TextView)findViewById(R.id.post_course);
         tv_year = (TextView)findViewById(R.id.post_year);
+        tv_roomNo = (TextView)findViewById(R.id.post_room);
         back = (Button)findViewById(R.id.back1);
         pdfView = (Button)findViewById(R.id.view);
         showData(course);
@@ -77,6 +79,7 @@ public class FirstActivity extends AppCompatActivity {
         tv_sem.setText(cour.getSem());
         tv_year.setText(cour.getYear());
         tv_course.setText(cour.getCourse());
+        tv_roomNo.setText(cour.getRoomNo());
         download(cour.getUrl(),cour.getCourse());
        /* progressbar.setVisibility(View.GONE);
         pdfView.setVisibility(View.VISIBLE);

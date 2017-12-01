@@ -33,6 +33,7 @@ public class HomeActivity extends AppCompatActivity {
     String post_sem;
     String post_image;
     String id;
+    private int flag = 0;
     private FirebaseDatabase mDatabase;
     private StorageReference mStorage;
     Data uid;
@@ -74,7 +75,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
 
-        //fetching the id from the database
+
 
     }
 
@@ -92,13 +93,14 @@ public class HomeActivity extends AppCompatActivity {
 
             if(scanContent == null)
             {
-
+                Toast.makeText(HomeActivity.this, "No result", Toast.LENGTH_LONG).show();
             } else {//Toast.makeText(HomeActivity.this, scanContent, Toast.LENGTH_LONG).show();
 
                 mDatabase.getReference("Docs").getRef().child(scanContent).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
+
                             Course course = dataSnapshot.getValue(Course.class);
                             ArrayList<Course> courseArrayList = new ArrayList<Course>();
                             courseArrayList.add(course);
@@ -106,6 +108,7 @@ public class HomeActivity extends AppCompatActivity {
                             intent1.putParcelableArrayListExtra("course", courseArrayList);
                             startActivity(intent1);
                             finish();
+
                         }else{
                             Toast.makeText(HomeActivity.this, "Result Not Found", Toast.LENGTH_LONG).show();
                         }

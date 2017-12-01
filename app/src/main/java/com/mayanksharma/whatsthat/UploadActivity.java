@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -46,6 +47,7 @@ import static android.R.attr.data;
 public class UploadActivity extends AppCompatActivity {
     private Spinner spinner1, spinner2, spinner3;
     private ArrayAdapter<CharSequence> adapter1, adapter2, adapter3;
+    private EditText mRoomNo;
     private Button Upload_btn, Pdf_btn, Qr_generate;
     private DatabaseReference mDatabase;
     private StorageReference mStorage;
@@ -56,11 +58,13 @@ public class UploadActivity extends AppCompatActivity {
     String get_id;
     private Bitmap bitmap;
     String Get_qr_url;
+    private int flag = 0;
     private Uri mQrCodeUri = null;
     //ProgressBar progressBar;
     private ProgressDialog mProgress;
     private Uri mPdfUri = null;
     private Uri mQRUri = null;
+    private String COURSE;
     public final static int QRcodeWidth = 500;
 
 
@@ -76,6 +80,7 @@ public class UploadActivity extends AppCompatActivity {
         spinner1 = (Spinner) findViewById(R.id.course_spinner);
         spinner2 = (Spinner) findViewById(R.id.year_spinner);
         spinner3 = (Spinner) findViewById(R.id.semester_spinner);
+        mRoomNo = (EditText)findViewById(R.id.roomNo);
 
         adapter1 = ArrayAdapter.createFromResource(this, R.array.courses, android.R.layout.simple_spinner_item);
         adapter2 = ArrayAdapter.createFromResource(this, R.array.years, android.R.layout.simple_spinner_item);
@@ -101,7 +106,7 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                Toast.makeText(getBaseContext(), parent.getItemAtPosition(position) + "selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), parent.getItemAtPosition(position) + " selected", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -114,7 +119,7 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                Toast.makeText(getBaseContext(), parent.getItemAtPosition(position) + "selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), parent.getItemAtPosition(position) + " selected", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -127,7 +132,7 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                Toast.makeText(getBaseContext(), parent.getItemAtPosition(position) + "selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), parent.getItemAtPosition(position) + " selected", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -140,7 +145,7 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 UploadIt(mPdfUri);
-                UploadQR();
+                //UploadQR();
                 //Toast.makeText(this, "uploaded", Toast.LENGTH_LONG).show();
                 //Toast makeText (Context context, CharSequence text, int duration);
             }
@@ -183,6 +188,9 @@ public class UploadActivity extends AppCompatActivity {
         mProgress = new ProgressDialog(this);
 
     }
+
+
+
 
     Bitmap TextToImageEncode(String Value) throws WriterException {
         BitMatrix bitMatrix;
@@ -249,9 +257,14 @@ public class UploadActivity extends AppCompatActivity {
                 PdfStatus.setText("Selected");
 
                 mPdfUri = data.getData();
+                flag = 1;
             } else {
-                Toast.makeText(this, "No file chosen", Toast.LENGTH_SHORT).show();
+                Toast.makeText(UploadActivity.this, "No file chosen", Toast.LENGTH_SHORT).show();
             }
+        }
+        else
+        {
+            
         }
     }
 
@@ -263,8 +276,9 @@ public class UploadActivity extends AppCompatActivity {
         final String Get_Course = spinner1.getSelectedItem().toString();
         final String Get_Year = spinner2.getSelectedItem().toString();
         final String Get_Sem = spinner3.getSelectedItem().toString();
+        final String Get_Room = mRoomNo.getText().toString().trim();
 
-        if (!TextUtils.isEmpty(Get_Course) && !TextUtils.isEmpty(Get_Year) && !TextUtils.isEmpty(Get_Sem)) {
+        if (!TextUtils.isEmpty(Get_Course) && !TextUtils.isEmpty(Get_Year) && !TextUtils.isEmpty(Get_Sem) && flag == 1) {
             mProgress.show();
 
             //String get_id = mDatabase.push().getKey();
@@ -277,12 +291,13 @@ public class UploadActivity extends AppCompatActivity {
                     @SuppressWarnings("VisibleForTests")
                     final String Get_pdf_url = taskSnapshot.getDownloadUrl().toString();
 
-                    Data data = new Data(Get_Course, Get_Year, Get_Sem, get_id, Get_pdf_url);
+                    Data data = new Data(Get_Course, Get_Year, Get_Sem, get_id, Get_Room, Get_pdf_url);
                     mDatabase.child(get_id).setValue(data);
                     //progressBar.setVisibility(View.GONE);
 
 
-                    Intent intent = new Intent(UploadActivity.this, FinishActivity.class);
+                    Intent intent = new Intent(UploadActivity.this, DisplayActivity.class);
+                    //Intent intent = new Intent(UploadActivity.this, DisplayActivity.class);
                     startActivity(intent);
                     //Toast.makeText(this, "uploaded", Toast.LENGTH_LONG).show();
                     mProgress.dismiss();
@@ -302,7 +317,7 @@ public class UploadActivity extends AppCompatActivity {
 
 
         } else {
-            Toast.makeText(UploadActivity.this, "Error", Toast.LENGTH_LONG).show();
+            Toast.makeText(UploadActivity.this, "Please select a pdf file", Toast.LENGTH_LONG).show();
         }
 
     }
