@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -27,6 +28,10 @@ public class DisplayActivity extends AppCompatActivity {
     private Button bNext;
     private String text2Qr;
     private String get_id;
+    private String get_course;
+    private String get_sem;
+    private String get_year;
+    private String get_event;
     private Uri mQrCodeUri = null;
     List<Data> dataList;
 
@@ -36,14 +41,16 @@ public class DisplayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display);
-        ArrayList<Course> course = this.getIntent().getParcelableArrayListExtra("course");
+        Intent i = getIntent();
+        Bundle bundle = i.getExtras();
+        Data user = (Data) bundle.getSerializable("user");
 
 
         dataList = new ArrayList<>();
         tv_room = (TextView)findViewById(R.id.display_room);
         qImage = (ImageView)findViewById(R.id.display_image);
         bNext = (Button)findViewById(R.id.next_button);
-        showData(course);
+        showData(user);
 
         //to go back
         bNext.setOnClickListener(new View.OnClickListener() {
@@ -57,11 +64,26 @@ public class DisplayActivity extends AppCompatActivity {
 
     }
 
-    public void showData(ArrayList<Course> courses) {
-        final Course cour=courses.get(0);
+    public void showData(Data courses) {
 
-        tv_room.setText(cour.getRoomNo());
-        get_id = (cour.getId());
+
+        if (!TextUtils.isEmpty(courses.getRoomNo()))
+        tv_room.setText(courses.getRoomNo());
+
+        if (!TextUtils.isEmpty(courses.getId()))
+            get_id = (courses.getId());
+
+        if (!TextUtils.isEmpty(courses.getCourse()))
+            get_course = (courses.getCourse());
+
+        if (!TextUtils.isEmpty(courses.getSem()))
+            get_sem = (courses.getSem());
+
+        if (!TextUtils.isEmpty(courses.getYear()))
+            get_year = (courses.getYear());
+
+        if (!TextUtils.isEmpty(courses.getEvent()))
+            get_event = (courses.getEvent());
 
        /* progressbar.setVisibility(View.GONE);
         pdfView.setVisibility(View.VISIBLE);
@@ -84,7 +106,8 @@ public class DisplayActivity extends AppCompatActivity {
         super.onStart();
         //For generating QR CODE
 
-                text2Qr = get_id;
+                    text2Qr = get_course + get_sem + get_year;
+
                 MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
                 try {
                     BitMatrix bitMatrix = multiFormatWriter.encode(text2Qr, BarcodeFormat.QR_CODE, 200, 200);

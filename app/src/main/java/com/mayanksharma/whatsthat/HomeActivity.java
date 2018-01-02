@@ -27,16 +27,8 @@ public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
     private Button buttonScan;
     private IntentIntegrator qrScan;
-    String post_qrValue;
-    String post_course;
-    String post_year;
-    String post_sem;
-    String post_image;
-    String id;
-    private int flag = 0;
     private FirebaseDatabase mDatabase;
-    private StorageReference mStorage;
-    Data uid;
+
 
 
 
@@ -94,31 +86,38 @@ public class HomeActivity extends AppCompatActivity {
             if(scanContent == null)
             {
                 Toast.makeText(HomeActivity.this, "No result", Toast.LENGTH_LONG).show();
-            } else {//Toast.makeText(HomeActivity.this, scanContent, Toast.LENGTH_LONG).show();
+            }
+            else {Toast.makeText(HomeActivity.this, scanContent, Toast.LENGTH_LONG).show();
 
-                mDatabase.getReference("Docs").getRef().child(scanContent).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
+                try {
 
-                            Course course = dataSnapshot.getValue(Course.class);
-                            ArrayList<Course> courseArrayList = new ArrayList<Course>();
-                            courseArrayList.add(course);
-                            Intent intent1 = new Intent(HomeActivity.this, FirstActivity.class);
-                            intent1.putParcelableArrayListExtra("course", courseArrayList);
-                            startActivity(intent1);
-                            finish();
+                    mDatabase.getReference("Docs").getRef().child(scanContent).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
 
-                        }else{
-                            Toast.makeText(HomeActivity.this, "Result Not Found", Toast.LENGTH_LONG).show();
+                                Course course = dataSnapshot.getValue(Course.class);
+                                ArrayList<Course> courseArrayList = new ArrayList<>();
+                                courseArrayList.add(course);
+                                Intent intent1 = new Intent(HomeActivity.this, FirstActivity.class);
+                                intent1.putParcelableArrayListExtra("course", courseArrayList);
+                                startActivity(intent1);
+                                finish();
+
+                            } else {
+                                Toast.makeText(HomeActivity.this, "Result Not Found", Toast.LENGTH_LONG).show();
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.e("Home Scanner Error", "Failed to read app title value.", databaseError.toException());
-                    }
-                });
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.e("Home Scanner Error", "Failed to read app title value.", databaseError.toException());
+                        }
+                    });
+                } catch (Exception e) {
+                    Toast.makeText(HomeActivity.this, "Result Not Found", Toast.LENGTH_LONG).show();
+
+                }
             }
           /*  if(scanContent == null)
             {

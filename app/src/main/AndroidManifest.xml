@@ -26,7 +26,9 @@
         <activity android:name=".UploadActivity" />
         <activity android:name=".FinishActivity" />
         <activity android:name=".WevViewPdf" />
-        <activity android:name=".DisplayActivity"></activity>
+        <activity android:name=".DisplayActivity" />
+        <activity android:name=".DisplayActivity2" />
+        <activity android:name=".SecondActivity"></activity>
     </application>
 
 </manifest>
