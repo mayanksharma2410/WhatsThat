@@ -99,7 +99,8 @@ public class HomeActivity extends AppCompatActivity {
                                 Course course = dataSnapshot.getValue(Course.class);
                                 ArrayList<Course> courseArrayList = new ArrayList<>();
                                 courseArrayList.add(course);
-                                Intent intent1 = new Intent(HomeActivity.this, FirstActivity.class);
+                                //Intent intent1 = new Intent(HomeActivity.this, FirstActivity.class);
+                                Intent intent1 = new Intent(HomeActivity.this, SecondActivity.class);
                                 intent1.putParcelableArrayListExtra("course", courseArrayList);
                                 startActivity(intent1);
                                 finish();
